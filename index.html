@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Selfie App</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <link href="style.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="text-center">
+            <h1>Voice Selfie App</h1>
+            <img id="logo_img" src="https://media.istockphoto.com/id/1329031407/photo/young-man-with-backpack-taking-selfie-portrait-on-a-mountain-smiling-happy-guy-enjoying.jpg?s=612x612&w=0&k=20&c=WvjAEx3QlWoAn49drp0N1vmxAgGObxWDpoXtaU2iB4Q=" alt="Logo">
+            <hr>
+            <h4 style="color:rgb(40, 104, 201);">Please press allow as soon as the popup comes. After you give a voice command.</h4>
+
+            <div class="centered-content">
+                <div class="form-group">
+                    <label>Your voice output:</label>
+                    <textarea class="form-control" id="textbox" readonly></textarea>
+                </div>
+                <label>Your selfie will display here:</label>
+                <div id="camera"></div>
+                <br>
+                <div id="result"></div>
+            </div>
+
+            <button class="btn btn-primary" onclick="start()">Start</button>
+            <p>Press the start button</p>
+
+            <!-- Hidden link for downloading selfies -->
+            <a id="link" style="display:none;">Download Selfie</a>
+        </div>
+    </div>
+
+    <script>
+        var SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+        var recognition = new SpeechRecognition();
+
+        function start() {
+            document.getElementById("textbox").value = '';
+            recognition.start();
+        }
+
+        recognition.onresult = function(event) {
+            var Content = event.results[0][0].transcript;
+            document.getElementById("textbox").value = Content;
+
+            // Check for the voice command "Take My Selfie"
+            if (Content.toLowerCase() === "take my selfie") {
+                speak();
+            }
+        };
+
+        function speak() {
+            var synth = window.speechSynthesis;
+            var speak_data = "Taking your selfie in 5 seconds";
+            var utterThis = new SpeechSynthesisUtterance(speak_data);
+            synth.speak(utterThis);
+            Webcam.attach(camera);
+
+            setTimeout(function() {
+                take_snapshot();
+                save();
+            }, 5000);
+        }
+
+        var camera = document.getElementById("camera");
+        Webcam.set({
+            width: 360,
+            height: 250,
+            image_format: 'jpeg',
+            jpeg_quality: 90
+        });
+
+        function take_snapshot() {
+            Webcam.snap(function(data_uri) {
+                document.getElementById("result").innerHTML = '<img id="selfie_image" src="' + data_uri + '"/>';
+            });
+        }
+
+        function save() {
+            var selfieImage = document.getElementById("selfie_image").src; // Get the image source
+            var link = document.getElementById("link"); // Get the hidden link element
+            link.href = selfieImage;
+            link.download = "selfie.jpg"; // Set the filename for the download
+            link.click(); // Trigger the download
+        }
+    </script>
+</body>
+</html>
